@@ -1,5 +1,4 @@
-﻿namespace SurveyBasket.Api.Contracts;
-
+﻿namespace SurveyBasket.Api.Contracts.Response;
 public class PollResponse
 {
     public int Id { get; set; }
