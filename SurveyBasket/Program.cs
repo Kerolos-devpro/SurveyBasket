@@ -1,3 +1,4 @@
+using SurveyBasket.Api.Services;
 
 namespace SurveyBasket.Api
 {
@@ -12,7 +13,7 @@ namespace SurveyBasket.Api
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
-
+            builder.Services.AddScoped<IPollService , PollService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -22,10 +23,9 @@ namespace SurveyBasket.Api
                 app.UseSwaggerUI(options => options.SwaggerEndpoint("/openApi/v1.json" , "v1"));
             }
 
-            app.UseHttpsRedirection();
-
+          
             app.UseAuthorization();
-
+           
 
             app.MapControllers();
 
