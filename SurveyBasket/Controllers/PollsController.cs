@@ -72,10 +72,4 @@ public class PollsController(IPollService poll) : ControllerBase
         return NotFound();
     }
 
-    [HttpPost("test")]
-    public IActionResult Test([FromBody] Student request)
-    {
-        return Ok("Values are accepted");
-    }
-
 }
