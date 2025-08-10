@@ -59,29 +59,10 @@ public class PollsController(IPollService poll) : ControllerBase
         return NotFound();
     }
 
-    [HttpGet("test")]
-    public IActionResult Test()
+    [HttpPost("test")]
+    public IActionResult Test([FromBody] Student request)
     {
-        var student = new Student
-        {
-            Id = 1,
-            FirstName = "Kerolos",
-            MiddleName = "Monir",
-            LastName = "Hannallah",
-            DateOfBirth = new DateTime(2003 , 07 , 11),
-            Department = new Department
-            {
-                Id = 1,
-                Name = "CS"
-            }
-
-
-
-        };
-
-        var response = student.Adapt<StudentResponse>();
-
-        return Ok(response);
+        return Ok("Values are accepted");
     }
 
 }
