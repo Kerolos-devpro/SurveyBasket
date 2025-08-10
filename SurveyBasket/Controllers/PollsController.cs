@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Api.Controllers;
+﻿
+
+namespace SurveyBasket.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -11,17 +13,19 @@ public class PollsController(IPollService poll) : ControllerBase
     public IActionResult GetAll()
     {
         var polls = _pollService.GetAll();
-        return Ok(polls);
+
+        var response = polls.Adapt<IEnumerable<PollResponse>>();
+        return Ok(response);
     }
 
     [HttpGet("{id}")]
     public IActionResult Get([FromRoute] int id)
     {
        var poll = _pollService.Get(id);
-         if (poll == null)
+        if (poll == null)
             return NotFound();
 
-        var response =(PollResponse) poll;
+        var response = poll.Adapt<PollResponse>();
        return  Ok(response); 
     
     }
@@ -29,14 +33,16 @@ public class PollsController(IPollService poll) : ControllerBase
     [HttpPost("")]
     public IActionResult Add([FromBody] CreatePollRequest request)
     {
-        var newPoll = _pollService.Add((Poll)request);
-        return CreatedAtAction(nameof(Get), new {  id = newPoll.Id },newPoll);
+        var newPoll = _pollService.Add(request.Adapt<Poll>());
+        return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
+
+        
     }
 
     [HttpPut("{id}")]
     public IActionResult Update([FromRoute]int id ,[FromBody] CreatePollRequest request)
     {
-        var isUpdated = _pollService.Update(id ,(Poll) request);
+        var isUpdated = _pollService.Update(id, request.Adapt<Poll>());
         if (isUpdated)
             return NoContent();
 
@@ -51,6 +57,31 @@ public class PollsController(IPollService poll) : ControllerBase
             return NoContent() ;
 
         return NotFound();
+    }
+
+    [HttpGet("test")]
+    public IActionResult Test()
+    {
+        var student = new Student
+        {
+            Id = 1,
+            FirstName = "Kerolos",
+            MiddleName = "Monir",
+            LastName = "Hannallah",
+            DateOfBirth = new DateTime(2003 , 07 , 11),
+            Department = new Department
+            {
+                Id = 1,
+                Name = "CS"
+            }
+
+
+
+        };
+
+        var response = student.Adapt<StudentResponse>();
+
+        return Ok(response);
     }
 
 }
