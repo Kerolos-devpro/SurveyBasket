@@ -1,4 +1,5 @@
 using MapsterMapper;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using SurveyBasket.Api.Services;
 using System.Reflection;
 
@@ -19,6 +20,11 @@ namespace SurveyBasket.Api
 
             var mappingConfig = TypeAdapterConfig.GlobalSettings;
             mappingConfig.Scan(Assembly.GetExecutingAssembly());
+
+            builder.Services
+                .AddFluentValidationAutoValidation()
+                .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+           
 
 
             builder.Services.AddSingleton<IMapper>(new Mapper(mappingConfig));

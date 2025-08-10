@@ -1,5 +1,7 @@
 ﻿
 
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+
 namespace SurveyBasket.Api.Controllers;
 
 [Route("api/[controller]")]
@@ -31,8 +33,19 @@ public class PollsController(IPollService poll) : ControllerBase
     }
 
     [HttpPost("")]
-    public IActionResult Add([FromBody] CreatePollRequest request)
+    public IActionResult Add([FromBody] CreatePollRequest request , [FromServices] IValidator<CreatePollRequest> validator)
     {
+
+        var validationResult = validator.Validate(request); 
+        if (!validationResult.IsValid)
+        {
+            var modelstate = new ModelStateDictionary();
+            validationResult.Errors.ForEach(x => modelstate.AddModelError(x.PropertyName , x.ErrorMessage));
+            return ValidationProblem(modelstate);
+        }
+
+
+
         var newPoll = _pollService.Add(request.Adapt<Poll>());
         return CreatedAtAction(nameof(Get), new { id = newPoll.Id }, newPoll);
 
