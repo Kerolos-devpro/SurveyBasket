@@ -1,6 +1,12 @@
 ﻿global using Microsoft.AspNetCore.Mvc;
 global using System.Reflection;
-
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using System.Security.Claims;
+global using Microsoft.IdentityModel.Tokens;
+global using Microsoft.Extensions.Options;
+global using Microsoft.EntityFrameworkCore;
 
 global using Mapster;
 global using FluentValidation;
@@ -8,8 +14,10 @@ global using MapsterMapper;
 global using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 
+
 global using SurveyBasket.Api.Entities;
 global using SurveyBasket.Api.Services;
-global using SurveyBasket.Api.Contracts.Response;
-global using SurveyBasket.Api.Contracts.Requests;
-
+global using SurveyBasket.Api.Contracts;
+global using SurveyBasket.Api.Persistence;
+global using SurveyBasket.Api.Contracts.Authentication;
+global using SurveyBasket.Api.Authentication;
