@@ -6,10 +6,20 @@ namespace SurveyBasket.Api;
 
 public static class DependencyInjection 
 {
+
     public static IServiceCollection AddDependencies(this IServiceCollection services , IConfiguration configuration)
     {
-
+        var allowedOrigins = configuration.GetSection("AllowOrigins").Get<string[]>();
         services.AddControllers();
+
+        services.AddCors(option => 
+           option.AddDefaultPolicy( builder =>
+               builder
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .WithOrigins( allowedOrigins! )
+           )
+        );
 
         services.AddSwager()
             .AddMapsterConfig()

@@ -19,9 +19,9 @@ namespace SurveyBasket.Api
                 app.UseSwaggerUI(options => options.SwaggerEndpoint("/openApi/v1.json" , "v1"));
             }
 
+            app.UseCors();
           
             app.UseAuthorization();
-           
 
             app.MapControllers();
 
