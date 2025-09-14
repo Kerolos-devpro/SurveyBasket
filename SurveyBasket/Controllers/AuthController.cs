@@ -12,7 +12,6 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
-        throw new Exception("");
         var authResult = await _authService.GetTokenAsync(request.Email, request.Password, cancellationToken);
 
         return authResult.IsSuccess ? Ok(authResult.Value)

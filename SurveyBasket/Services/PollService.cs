@@ -1,4 +1,5 @@
 ﻿
+using Azure.Core;
 using SurveyBasket.Api.Contracts.Polls;
 
 namespace SurveyBasket.Api.Services;
@@ -19,27 +20,38 @@ public class PollService(ApplicationDbContext context) : IPollService
             : Result.Failure<PollResponse>(PollErrors.PollNotFound);
     }
 
-    public async Task<PollResponse> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<PollResponse>> AddAsync(PollRequest request, CancellationToken cancellationToken = default)
     {
+        var isExistingTitle = await _context.Polls.AnyAsync(x => x.Title == request.Title, cancellationToken: cancellationToken); 
+
+        if(isExistingTitle)
+             return Result.Failure<PollResponse>(PollErrors.DuplicatedTitle);
+
+
         var poll = request.Adapt<Poll>();
 
         await _context.AddAsync(poll, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return poll.Adapt<PollResponse>();
+        return Result.Success(poll.Adapt<PollResponse>());
     }
 
-    public async Task<Result> UpdateAsync(int id, PollRequest poll, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(int id, PollRequest request, CancellationToken cancellationToken = default)
     {
+        var isExistingTitle = await _context.Polls.AnyAsync(x => x.Title == request.Title && x.Id != id, cancellationToken: cancellationToken);
+
+        if (isExistingTitle)
+            return Result.Failure<PollResponse>(PollErrors.DuplicatedTitle);
+
         var currentPoll = await _context.Polls.FindAsync(id, cancellationToken);
 
         if (currentPoll is null)
             return Result.Failure(PollErrors.PollNotFound);
 
-        currentPoll.Title = poll.Title;
-        currentPoll.Summary = poll.Summary;
-        currentPoll.StartsAt = poll.StartsAt;
-        currentPoll.EndsAt = poll.EndsAt;
+        currentPoll.Title = request.Title;
+        currentPoll.Summary = request.Summary;
+        currentPoll.StartsAt = request.StartsAt;
+        currentPoll.EndsAt = request.EndsAt;
 
         await _context.SaveChangesAsync(cancellationToken);
 
