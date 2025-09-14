@@ -1,5 +1,4 @@
 
-
 namespace SurveyBasket.Api
 {
     public class Program
@@ -24,7 +23,7 @@ namespace SurveyBasket.Api
             app.UseAuthorization();
 
             app.MapControllers();
-
+            app.UseExceptionHandler();
             app.Run();
         }
     }
