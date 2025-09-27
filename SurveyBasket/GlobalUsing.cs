@@ -7,6 +7,7 @@ global using System.Security.Claims;
 global using Microsoft.IdentityModel.Tokens;
 global using Microsoft.Extensions.Options;
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.AspNetCore.Authorization;
 
 global using Mapster;
 global using FluentValidation;
@@ -24,3 +25,4 @@ global using SurveyBasket.Api.Authentication;
 global using SurveyBasket.Api.Abstractions;
 global using System.Security.Cryptography;
 global using SurveyBasket.Api.Errors;
+global using SurveyBasket.Api.Contracts.Questions;
