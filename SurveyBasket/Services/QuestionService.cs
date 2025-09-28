@@ -1,4 +1,6 @@
-﻿namespace SurveyBasket.Api.Services;
+﻿using SurveyBasket.Api.Contracts.Answers;
+
+namespace SurveyBasket.Api.Services;
 
 public class QuestionService(ApplicationDbContext context) : IQuestionService
 {
@@ -43,7 +45,37 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
         return Result.Success<IEnumerable<QuestionResponse>>(questions);    
     }
 
+    public async Task<Result<IEnumerable<QuestionResponse>>> GetAvailableAsync(int pollId, string userId, CancellationToken cancellationToken = default)
+    {
+        var hasVote = await _context.Votes.AnyAsync(x => x.PollId == pollId && x.UserId == userId, cancellationToken: cancellationToken);
+        if (hasVote)
+            return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.DuplicatedVote);
 
+        var pollIsExists = await _context.Polls.AnyAsync(x => x.Id == pollId 
+            && x.IsPublished
+            && x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) 
+            && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken: cancellationToken);
+
+        if(!pollIsExists)
+            return Result.Failure<IEnumerable<QuestionResponse>>(PollErrors.PollNotFound);
+
+        var questions = await _context.Questions
+            .Where(x => x.PollId == pollId && x.IsActive)
+            .Include(x => x.Answers)
+            .Select(q => new QuestionResponse(
+                   q.Id,
+                   q.Content,
+                   q.Answers.Where(x => x.IsActive).Select(a => new AnswerResponse(
+                       a.Id,
+                       a.Content
+                       ))
+                ))
+            .AsNoTracking()
+            .ToListAsync(cancellationToken: cancellationToken);
+
+         
+       return Result.Success<IEnumerable<QuestionResponse>>(questions);
+    }
 
     public async Task<Result<QuestionResponse>> GetAsync(int id, int pollId, CancellationToken cancellationToken = default)
     {
@@ -149,5 +181,5 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
         return Result.Success();
     }
 
-  
+    
 }

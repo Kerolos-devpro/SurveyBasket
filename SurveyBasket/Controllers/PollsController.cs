@@ -15,14 +15,17 @@ public class PollsController(IPollService poll) : ControllerBase
 {
     private readonly IPollService _pollService = poll;
 
-    [HttpGet]
+    [HttpGet("")]
   
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
-        var polls =await _pollService.GetAllAsync(cancellationToken);
+        return Ok(await _pollService.GetAllAsync(cancellationToken));
+    }
 
-        var response = polls.Adapt<IEnumerable<PollResponse>>();
-        return Ok(response);
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrent(CancellationToken cancellationToken)
+    {
+        return Ok(await _pollService.GetCurrentAsync(cancellationToken));
     }
 
     [HttpGet("{id}")]
@@ -32,7 +35,7 @@ public class PollsController(IPollService poll) : ControllerBase
     
         return result.IsSuccess 
             ? Ok(result.Value) 
-            : Problem(statusCode: StatusCodes.Status404NotFound , title:result.Error.Code , detail: result.Error.Description );
+            : result.ToProblem();
     }
 
     [HttpPost("")]
@@ -43,7 +46,7 @@ public class PollsController(IPollService poll) : ControllerBase
 
         return result.IsSuccess ?
              CreatedAtAction(nameof(Get), new { id = result.Value!.Id }, result.Value)
-            : result.ToProblem(StatusCodes.Status409Conflict); 
+            : result.ToProblem(); 
 
         
     }
@@ -57,9 +60,8 @@ public class PollsController(IPollService poll) : ControllerBase
         if (result.IsSuccess)
             return NoContent();
 
-        return result.Error.Equals(PollErrors.DuplicatedTitle)
-                ? result.ToProblem(StatusCodes.Status409Conflict)
-                : result.ToProblem(StatusCodes.Status404NotFound);
+      
+        return result.ToProblem();
     }
 
     [HttpDelete("{id}")]
@@ -68,7 +70,7 @@ public class PollsController(IPollService poll) : ControllerBase
         var result = await _pollService.DeleteAsync(id, cancellationToken);
         return result.IsSuccess ?
             NoContent()
-            : result.ToProblem(StatusCodes.Status404NotFound);
+            : result.ToProblem();
 
     }
 
@@ -79,7 +81,7 @@ public class PollsController(IPollService poll) : ControllerBase
        
         return result.IsSuccess ? 
             NoContent()
-            :result.ToProblem(StatusCodes.Status404NotFound) ;
+            :result.ToProblem() ;
 
     }
 
