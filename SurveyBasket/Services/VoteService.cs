@@ -8,33 +8,32 @@ public class VoteService(ApplicationDbContext context) : IVoteService
 
     public async Task<Result> AddAsync(int pollId, string userId, VoteRequest request, CancellationToken cancellationToken = default)
     {
-        var hasVote = await _context.Votes.AnyAsync(x => x.PollId == pollId && x.UserId == userId, cancellationToken: cancellationToken);
+        var hasVote = await _context.Votes.AnyAsync(x => x.PollId == pollId && x.ApplicationUserId == userId, cancellationToken);
+
         if (hasVote)
             return Result.Failure(VoteErrors.DuplicatedVote);
 
-        var pollIsExists = await _context.Polls.AnyAsync(x => x.Id == pollId
-            && x.IsPublished
-            && x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow)
-            && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken: cancellationToken);
+        var pollIsExists = await _context.Polls.AnyAsync(x => x.Id == pollId && x.IsPublished && x.StartsAt <= DateOnly.FromDateTime(DateTime.UtcNow) && x.EndsAt >= DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
 
         if (!pollIsExists)
             return Result.Failure(PollErrors.PollNotFound);
-        
+
         var availableQuestions = await _context.Questions
             .Where(x => x.PollId == pollId && x.IsActive)
             .Select(x => x.Id)
-            .ToListAsync(cancellationToken: cancellationToken);
+            .ToListAsync(cancellationToken);
 
-        if(!request.VoteAnswers.Select(x => x.QuestionId).SequenceEqual(availableQuestions))
+        if (!request.VoteAnswers.Select(x => x.QuestionId).SequenceEqual(availableQuestions))
             return Result.Failure(VoteErrors.InvalidQuestions);
 
-        var vote = new Vote() { 
+        var vote = new Vote
+        {
             PollId = pollId,
-            UserId = userId,
-            voteAnswers = request.VoteAnswers.Adapt<IEnumerable<VoteAnswer>>().ToList(),
+            ApplicationUserId = userId,
+            voteAnswers = request.VoteAnswers.Adapt<IEnumerable<VoteAnswer>>().ToList()
         };
 
-        await _context.AddAsync(vote , cancellationToken);
+        await _context.AddAsync(vote, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

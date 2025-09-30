@@ -1,7 +1,5 @@
 ﻿
-
 using SurveyBasket.Api.Contracts.Votes;
-
 namespace SurveyBasket.Api.Controllers;
 [Route("api/polls/{pollId}/vote")]
 [ApiController]
@@ -27,13 +25,9 @@ public class VotesController(IQuestionService questionService , IVoteService vot
     public async Task<IActionResult> Vote([FromRoute] int pollId, [FromBody] VoteRequest request, CancellationToken cancellationToken)
     {
         var userId = User.GetUserId();
-        var result = await _voteService.AddAsync(pollId , userId! , request, cancellationToken);
+        var result = await _voteService.AddAsync(pollId,userId!, request, cancellationToken);
 
-        if (result.IsSuccess)
-            return Created();
-
-
-       return result.ToProblem();
+        return result.IsSuccess ? Created() : result.ToProblem();
     }
 
 

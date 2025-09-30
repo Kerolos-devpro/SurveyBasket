@@ -47,7 +47,7 @@ public class QuestionService(ApplicationDbContext context) : IQuestionService
 
     public async Task<Result<IEnumerable<QuestionResponse>>> GetAvailableAsync(int pollId, string userId, CancellationToken cancellationToken = default)
     {
-        var hasVote = await _context.Votes.AnyAsync(x => x.PollId == pollId && x.UserId == userId, cancellationToken: cancellationToken);
+        var hasVote = await _context.Votes.AnyAsync(x => x.PollId == pollId && x.ApplicationUserId == userId, cancellationToken: cancellationToken);
         if (hasVote)
             return Result.Failure<IEnumerable<QuestionResponse>>(VoteErrors.DuplicatedVote);
 

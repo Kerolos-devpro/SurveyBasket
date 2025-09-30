@@ -27,3 +27,4 @@ global using System.Security.Cryptography;
 global using SurveyBasket.Api.Errors;
 global using SurveyBasket.Api.Extensions;
 global using SurveyBasket.Api.Contracts.Questions;
+global using SurveyBasket.Api.Contracts.Results;
