@@ -14,7 +14,14 @@ namespace SurveyBasket.Api
              configuration.ReadFrom.Configuration(context.Configuration)
             );
 
-            builder.Services.AddResponseCaching();
+            builder.Services.AddOutputCache(
+                options => options.AddPolicy
+                ("Polls" ,
+                x => x.Cache().Expire(TimeSpan.FromSeconds(120))
+                .Tag("availableQuestion")
+                )
+                
+            );
            
             var app = builder.Build();
 
@@ -30,7 +37,7 @@ namespace SurveyBasket.Api
           
             app.UseAuthorization();
 
-            app.UseResponseCaching();
+            app.UseOutputCache();
 
             app.MapControllers();
             app.UseExceptionHandler();

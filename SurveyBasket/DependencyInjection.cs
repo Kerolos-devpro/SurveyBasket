@@ -11,6 +11,8 @@ public static class DependencyInjection
         var allowedOrigins = configuration.GetSection("AllowOrigins").Get<string[]>();
         services.AddControllers();
 
+
+        services.AddHybridCache();
         services.AddCors(option => 
            option.AddDefaultPolicy( builder =>
                builder
