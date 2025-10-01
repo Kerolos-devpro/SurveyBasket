@@ -8,6 +8,12 @@ global using Microsoft.IdentityModel.Tokens;
 global using Microsoft.Extensions.Options;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Identity.UI.Services;
+global using MailKit.Net.Smtp;
+global using MailKit.Security;
+global using MimeKit;
+
+
 
 global using Mapster;
 global using FluentValidation;
@@ -18,7 +24,6 @@ global using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 global using SurveyBasket.Api.Entities;
 global using SurveyBasket.Api.Services;
-global using SurveyBasket.Api.Contracts;
 global using SurveyBasket.Api.Persistence;
 global using SurveyBasket.Api.Contracts.Authentication;
 global using SurveyBasket.Api.Authentication;
@@ -28,3 +33,5 @@ global using SurveyBasket.Api.Errors;
 global using SurveyBasket.Api.Extensions;
 global using SurveyBasket.Api.Contracts.Questions;
 global using SurveyBasket.Api.Contracts.Results;
+global using SurveyBasket.Api.Abstractions.Consts;
+global using SurveyBasket.Api.Settings;

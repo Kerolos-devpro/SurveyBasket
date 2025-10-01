@@ -20,9 +20,39 @@ public class AuthController(IAuthService authService , ILogger<AuthController> l
             : authResult
             .ToProblem();
     }
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _authService.RegisterAsync(request, cancellationToken);
+
+
+        return result.IsSuccess 
+            ? Ok()
+            : result.ToProblem();
+    }
+    [HttpPost("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _authService.ConfirmEmailAsync(request, cancellationToken);
+
+
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
+    [HttpPost("resend-email-confirmation")]
+    public async Task<IActionResult> ResendEmailConfirmation([FromBody] ResendEmailConfirmationRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _authService.ResendEmailConfirmationAsync(request, cancellationToken);
+
+
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> RefreshAsync([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
         var authResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
@@ -42,3 +72,4 @@ public class AuthController(IAuthService authService , ILogger<AuthController> l
 
     }
 }
+  

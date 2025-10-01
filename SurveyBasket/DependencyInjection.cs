@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SurveyBasket.Api.Settings;
 using System.Text;
 
 namespace SurveyBasket.Api;
@@ -36,9 +37,14 @@ public static class DependencyInjection
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
+        services.AddScoped<IEmailSender, EmailService>();
+
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
+        services.AddHttpContextAccessor();
+
+        services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
         return services;
     }
     private static IServiceCollection AddSwager(this IServiceCollection services)
@@ -82,7 +88,8 @@ public static class DependencyInjection
 
         var jwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
         services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
         services.AddAuthentication(options =>
         {
@@ -103,6 +110,13 @@ public static class DependencyInjection
                 ValidAudience= jwtSettings?.Audience
             };
 
+        });
+
+        services.Configure<IdentityOptions>(options =>
+        {
+               options.Password.RequiredLength = 8;
+               options.SignIn.RequireConfirmedEmail = true;
+               options.User.RequireUniqueEmail = true; 
         });
         return services;
     }
