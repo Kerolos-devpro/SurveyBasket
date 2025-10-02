@@ -79,7 +79,7 @@ public class AuthController(IAuthService authService , ILogger<AuthController> l
         var authResult = await _authService.GetRefreshTokenAsync(request.Token, request.RefreshToken, cancellationToken);
 
 
-        return authResult.IsSuccess ? Ok(authResult.Value): authResult.ToProblem();
+        return authResult.IsSuccess ? Ok(authResult.Value) : authResult.ToProblem();
     }
 
     [HttpPost("revoke-refresh-token")]

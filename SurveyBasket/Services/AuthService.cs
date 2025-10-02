@@ -11,7 +11,8 @@ public class AuthService(
     IJwtProvider jwtProvider,
     ILogger<AuthService> logger,
     IEmailSender emailSender,
-    IHttpContextAccessor httpContextAccessor
+    IHttpContextAccessor httpContextAccessor,
+    ApplicationDbContext context
     ) : IAuthService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
@@ -20,36 +21,34 @@ public class AuthService(
     private readonly ILogger<AuthService> _logger = logger;
     private readonly IEmailSender _emailSender = emailSender;
     IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly ApplicationDbContext _context = context;
     private readonly int _refreshTokenExpiryDays = 14;
 
     public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
     {
-
         if (await _userManager.FindByEmailAsync(email) is not { } user)
             return Result.Failure<AuthResponse>(UserErrors.InvalidCredentials);
 
-
-       var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
+        var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
 
         if (result.Succeeded)
         {
-           
-            var (token, expiresIn) = _jwtProvider.GenerateToken(user);
-            var refreshToken = GenerateRefreshToken();
-            var refreshTokenExpiration = DateTime.Now.AddDays(_refreshTokenExpiryDays);
+            var (userRoles, userPermissions) = await GetUserRolesAndPermissions(user, cancellationToken);
 
-            user.RefreshTokens.Add(
-                 new RefreshToken
-                 {
-                     Token = refreshToken,
-                     ExpiresOn = refreshTokenExpiration,
-                 }
-            );
+            var (token, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
+            var refreshToken = GenerateRefreshToken();
+            var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
+
+            user.RefreshTokens.Add(new RefreshToken
+            {
+                Token = refreshToken,
+                ExpiresOn = refreshTokenExpiration
+            });
 
             await _userManager.UpdateAsync(user);
 
             var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, token, expiresIn, refreshToken, refreshTokenExpiration);
-           
+
             return Result.Success(response);
         }
 
@@ -70,11 +69,13 @@ public class AuthService(
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken && x.IsActive);
 
         if (userRefreshToken is null)
-              return Result.Failure<AuthResponse>(UserErrors.InvalidRefreshToken);
+            return Result.Failure<AuthResponse>(UserErrors.InvalidRefreshToken);
 
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 
-        var (newToken, expiresIn) = _jwtProvider.GenerateToken(user);
+        var (userRoles, userPermissions) = await GetUserRolesAndPermissions(user, cancellationToken);
+
+        var (newToken, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
         var newRefreshToken = GenerateRefreshToken();
         var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
 
@@ -87,7 +88,8 @@ public class AuthService(
         await _userManager.UpdateAsync(user);
 
         var response = new AuthResponse(user.Id, user.Email, user.FirstName, user.LastName, newToken, expiresIn, newRefreshToken, refreshTokenExpiration);
-        return Result.Success(response);    
+
+        return Result.Success(response);
     }
     public async Task<Result> RevokeRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
     {
@@ -167,7 +169,7 @@ public class AuthService(
         var result = await _userManager.ConfirmEmailAsync(user , code);
         if (result.Succeeded)
         {
-           
+            await _userManager.AddToRoleAsync(user , DefaultRoles.Member);
             return Result.Success();
         }
 
@@ -278,6 +280,30 @@ public class AuthService(
 
         await Task.CompletedTask;
     }
+    private async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetUserRolesAndPermissions(ApplicationUser user, CancellationToken cancellationToken)
+    {
+        var userRoles = await _userManager.GetRolesAsync(user);
 
-  
+        //var userPermissions = await _context.Roles
+        //    .Join(_context.RoleClaims,
+        //        role => role.Id,
+        //        claim => claim.RoleId,
+        //        (role, claim) => new { role, claim }
+        //    )
+        //    .Where(x => userRoles.Contains(x.role.Name!))
+        //    .Select(x => x.claim.ClaimValue!)
+        //    .Distinct()
+        //    .ToListAsync(cancellationToken);
+
+        var userPermissions = await (from r in _context.Roles
+                                     join p in _context.RoleClaims
+                                     on r.Id equals p.RoleId
+                                     where userRoles.Contains(r.Name!)
+                                     select p.ClaimValue!)
+                                     .Distinct()
+                                     .ToListAsync(cancellationToken);
+
+        return (userRoles, userPermissions);
+    }
+
 }

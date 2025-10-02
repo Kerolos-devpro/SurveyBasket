@@ -41,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
         services.AddScoped<IEmailSender, EmailService>();
+       
         
 
 
@@ -70,7 +71,6 @@ public static class DependencyInjection
 
         return services;
     }
-
     private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
     {
 
@@ -80,10 +80,11 @@ public static class DependencyInjection
 
         return services;
     }
-
     private static IServiceCollection AddAuthConfig(this IServiceCollection services , IConfiguration configuration)
     {
         services.AddSingleton<IJwtProvider , JwtProvider>();
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 
         //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
         services.AddOptions<JwtOptions>()
