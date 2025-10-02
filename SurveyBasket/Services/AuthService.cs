@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+﻿using Hangfire;
+using Microsoft.AspNetCore.WebUtilities;
 using SurveyBasket.Api.Helpers;
 using System.Text;
 
@@ -130,7 +131,9 @@ public class AuthService(
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
             _logger.LogInformation("Confirmation code : {code}", code);
+
             await SendEmailConfirmation(user, code);
+
             return Result.Success();
         }
 
@@ -196,9 +199,7 @@ public class AuthService(
 
         _logger.LogInformation("Confirmation code {code}" , code);
 
-        //ToDo email
         await SendEmailConfirmation(user, code);
-
 
         return Result.Success();
     }
@@ -214,12 +215,14 @@ public class AuthService(
             new Dictionary<string, string>
             {
                     { "{{name}}" , user.FirstName},
-                     { "{{action_url}}" , $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}"},
+                     { "{{action_url}}" , $"{origin}/polls/emailConfirmation?userId={user.Id}&code={code}"},
             }
 
         );
 
-        await _emailSender.SendEmailAsync(user.Email!, "Survey Basket: Email Confirmation", emailBody);
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Survey Basket: Email Confirmation", emailBody));
+
+        await Task.CompletedTask;
     }
 
 }

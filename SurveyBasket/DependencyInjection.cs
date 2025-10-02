@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Hangfire;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SurveyBasket.Api.Settings;
 using System.Text;
 
@@ -26,18 +27,21 @@ public static class DependencyInjection
         services.AddSwager()
             .AddMapsterConfig()
             .AddFluentValidationConfig()
-            .AddAuthConfig(configuration);
+            .AddAuthConfig(configuration)
+            .AddBackGroundJobsConfig(configuration);
 
        services.AddDbContext<ApplicationDbContext>(
                options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
             );
-
+        services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
         services.AddScoped<IEmailSender, EmailService>();
+        
+
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
@@ -118,6 +122,18 @@ public static class DependencyInjection
                options.SignIn.RequireConfirmedEmail = true;
                options.User.RequireUniqueEmail = true; 
         });
+        return services;
+    }
+    private static IServiceCollection AddBackGroundJobsConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHangfire(config => config
+     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+     .UseSimpleAssemblyNameTypeSerializer()
+     .UseRecommendedSerializerSettings()
+     .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection")));
+
+        // Add the processing server as IHostedService
+        services.AddHangfireServer();
         return services;
     }
 }
