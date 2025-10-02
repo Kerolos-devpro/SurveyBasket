@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IPollService, PollService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserService , UserService>();
         services.AddScoped<IQuestionService, QuestionService>();
         services.AddScoped<IVoteService, VoteService>();
         services.AddScoped<IResultService, ResultService>();
@@ -91,7 +92,7 @@ public static class DependencyInjection
             .ValidateOnStart();
 
         var jwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
-        services.AddIdentity<ApplicationUser, IdentityRole>()
+        services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 

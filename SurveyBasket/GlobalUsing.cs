@@ -35,3 +35,4 @@ global using SurveyBasket.Api.Contracts.Questions;
 global using SurveyBasket.Api.Contracts.Results;
 global using SurveyBasket.Api.Abstractions.Consts;
 global using SurveyBasket.Api.Settings;
+global using SurveyBasket.Api.Contracts.User;
