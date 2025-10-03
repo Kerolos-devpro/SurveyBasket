@@ -13,7 +13,7 @@ global using MailKit.Net.Smtp;
 global using MailKit.Security;
 global using MimeKit;
 global using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-
+global using System.Threading.RateLimiting;
 
 global using Mapster;
 global using FluentValidation;

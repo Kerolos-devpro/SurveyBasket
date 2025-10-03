@@ -1,8 +1,11 @@
-﻿namespace SurveyBasket.Api.Controllers;
+﻿using Asp.Versioning;
+namespace SurveyBasket.Api.Controllers;
 
+
+[ApiVersion(1)]
+[ApiVersion(2)]
 [Route("api/[controller]")]
 [ApiController]
-
 public class PollsController(IPollService poll) : ControllerBase
 
 {
@@ -15,11 +18,21 @@ public class PollsController(IPollService poll) : ControllerBase
         return Ok(await _pollService.GetAllAsync(cancellationToken));
     }
 
+
+    [MapToApiVersion(1)]
     [Authorize(Roles = $"{DefaultRoles.Member}")]
     [HttpGet("current")]
-    public async Task<IActionResult> GetCurrent(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetCurrentV1(CancellationToken cancellationToken)
     {
-        return Ok(await _pollService.GetCurrentAsync(cancellationToken));
+        return Ok(await _pollService.GetCurrentAsyncV1(cancellationToken));
+    }
+
+    [MapToApiVersion(2)]
+    [Authorize(Roles = $"{DefaultRoles.Member}")]
+    [HttpGet("current")]
+    public async Task<IActionResult> GetCurrentV2(CancellationToken cancellationToken)
+    {
+        return Ok(await _pollService.GetCurrentAsyncV2(cancellationToken));
     }
 
     [HttpGet("{id}")]
