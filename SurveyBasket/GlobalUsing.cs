@@ -12,7 +12,7 @@ global using Microsoft.AspNetCore.Identity.UI.Services;
 global using MailKit.Net.Smtp;
 global using MailKit.Security;
 global using MimeKit;
-
+global using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 
 global using Mapster;

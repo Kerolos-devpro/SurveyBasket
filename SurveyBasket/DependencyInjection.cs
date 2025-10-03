@@ -1,5 +1,6 @@
 ﻿using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SurveyBasket.Api.Health;
 using SurveyBasket.Api.Settings;
 using System.Text;
 
@@ -49,6 +50,14 @@ public static class DependencyInjection
         services.AddProblemDetails();
 
         services.AddHttpContextAccessor();
+        services.AddHealthChecks()
+            .AddSqlServer(name:"database", connectionString: configuration.GetConnectionString("DefaultConnection")!)
+            .AddHangfire(options =>
+            {
+                options.MinimumAvailableServers = 1;
+
+            })
+            .AddCheck<MailProviderHealthCheck>(name : "Mail Provider");
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
         return services;
